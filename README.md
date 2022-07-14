@@ -3,7 +3,7 @@
 
 ## Usage
 
-Add a `release.yml`
+Add a `test.yml`
 
 ```yml
 name: Test
