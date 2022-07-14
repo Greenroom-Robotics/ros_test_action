@@ -1,0 +1,48 @@
+name: "ROS Test Action"
+description: "Runs Greenroom's standard ros test setup"
+author: "Greenroom Robotics"
+branding:
+  icon: "package"
+  color: "gray-dark"
+inputs:
+  token:
+    description: "The Github token with access to the packages repo and release api"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 18
+
+    - name: Add apt and and ROS lists
+      env:
+        API_TOKEN_GITHUB: ${{ inputs.token }}
+      run: |
+        sudo curl -s https://$API_TOKEN_GITHUB@raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/scripts/setup-rosdep.sh | bash -s
+        sudo curl -s https://$API_TOKEN_GITHUB@raw.githubusercontent.com/Greenroom-Robotics/packages/main/scripts/setup-apt.sh | bash -s
+
+    - name: Setup Typecheck deps
+      run: |
+        npm install --global pyright
+
+    - name: Install rosdep deps
+      env:
+        GHCR_PAT: ${{ inputs.token }}
+        ROSDISTRO_OVERLAY_INDEX_URL: https://raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/overlay.yaml
+      run: |
+        sudo apt-get update
+        rosdep update
+        rosdep install -y -i --from-paths .
+    - name: Colcon Build
+      shell: bash
+      run: source $ROS_OVERLAY/setup.sh && colcon build --merge-install
+
+    - name: Colcon Test
+      shell: bash
+      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && colcon test --merge-install && colcon test-result --verbose
+
+    - name: Typecheck
+      shell: bash
+      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && pyright .
