@@ -16,7 +16,7 @@ on:
       - main
 
 jobs:
-  release:
+  test:
     name: Test
     runs-on: ubuntu-latest
     container:
