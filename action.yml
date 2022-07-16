@@ -57,7 +57,7 @@ runs:
 
     - name: Colcon Test
       shell: bash
-      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && colcon test --merge-install && colcon test-result --verbose
+      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && colcon test --merge-install || colcon test-result --verbose
 
     - name: Typecheck
       shell: bash
