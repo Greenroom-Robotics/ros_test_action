@@ -16,9 +16,20 @@ runs:
       with:
         node-version: 18
 
+    - name: Load cached poetry
+      id: cached-poetry-dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pypoetry
+        key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+       
     - name: Install poetry
       shell: bash
-      run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        poetry config virtualenvs.create false
 
     - name: Add apt and and ROS lists
       shell: bash
@@ -45,7 +56,8 @@ runs:
 
     - name: Poetry Install
       shell: bash
-      run: . $HOME/.poetry/env && poetry config virtualenvs.create false && python3 ${GITHUB_ACTION_PATH}/scripts/poetry-install.py
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: python3 ${GITHUB_ACTION_PATH}/scripts/poetry-install.py
 
     - name: Poetry Test
       shell: bash
