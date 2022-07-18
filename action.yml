@@ -23,7 +23,7 @@ runs:
         path: |
           ~/.cache/pypoetry
         key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-       
+
     - name: Install poetry
       shell: bash
       run: |
