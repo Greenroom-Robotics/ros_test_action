@@ -14,6 +14,8 @@ if __name__ == "__main__":
 
     for dir in pyproject_toml_dirs:
         print(bcolors.OKCYAN + f"Poetry install {str(dir)}..." + bcolors.ENDC)
-        subprocess.call(f"cd {dir} && poetry install", shell=True)
+        error = subprocess.call(f"cd {dir} && poetry install", shell=True)
+        if (error):
+            raise Exception("Install failed")
 
     print(bcolors.OKGREEN + "Complete" + bcolors.ENDC)

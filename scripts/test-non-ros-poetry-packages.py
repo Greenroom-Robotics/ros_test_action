@@ -23,6 +23,8 @@ if __name__ == "__main__":
 
     for dir in non_ros_poetry_packages:
         print(bcolors.OKCYAN + f"Running tests for {str(dir)}..." + bcolors.ENDC)
-        subprocess.call(f"cd {dir} && python3 -m pytest", shell=True)
+        error = subprocess.call(f"cd {dir} && python3 -m pytest .", shell=True)
+        if (error):
+            raise Exception("Pytest failed")
 
     print(bcolors.OKGREEN + "Complete" + bcolors.ENDC)
