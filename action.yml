@@ -22,6 +22,7 @@ runs:
       with:
         path: |
           ~/.cache/pypoetry
+          ~/.local/lib/python3.8/site-packages
         key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install poetry
@@ -29,7 +30,7 @@ runs:
       run: |
         pip install poetry
         echo "$HOME/.local/bin" >> $GITHUB_PATH
-        poetry config virtualenvs.create false
+        poetry config virtualenvs.create false 
 
     - name: Add apt and and ROS lists
       shell: bash
@@ -56,7 +57,7 @@ runs:
 
     - name: Poetry Install
       shell: bash
-      # if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: python3 ${GITHUB_ACTION_PATH}/scripts/poetry-install.py
 
     - name: Poetry Test
