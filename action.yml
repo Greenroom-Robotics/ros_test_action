@@ -30,7 +30,7 @@ runs:
       run: |
         pip install poetry
         echo "$HOME/.local/bin" >> $GITHUB_PATH
-        poetry config virtualenvs.create false 
+        pip install git+https://github.com/UrbanMachine/colcon-poetry-ros.git@v0.7.0
 
     - name: Add apt and and ROS lists
       shell: bash
@@ -55,23 +55,22 @@ runs:
         rosdep update
         rosdep install -y -i --from-paths .
 
+    - name: Colcon Build
+      shell: bash
+      run: source $ROS_OVERLAY/setup.sh && colcon build
+
     - name: Poetry Install
       shell: bash
-      # if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: python3 ${GITHUB_ACTION_PATH}/scripts/poetry-install.py
+      run: source install/setup.sh && python3 -m colcon_poetry_ros.dependencies.install --base-path /install/*/share
 
     - name: Poetry Test
       shell: bash
       run: python3 ${GITHUB_ACTION_PATH}/scripts/test-non-ros-poetry-packages.py
 
-    - name: Colcon Build
-      shell: bash
-      run: source $ROS_OVERLAY/setup.sh && colcon build --merge-install
-
     - name: Colcon Test
       shell: bash
-      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && colcon test --merge-install || colcon test-result --verbose
+      run: source install/setup.sh && colcon test || colcon test-result --verbose
 
     - name: Typecheck
       shell: bash
-      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && pyright .
+      run: source install/setup.sh && pyright .
