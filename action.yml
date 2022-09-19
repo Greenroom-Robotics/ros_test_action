@@ -75,7 +75,7 @@ runs:
       env:
         PLATFORM_MODULE: ${{ inputs.platform_module }}
         ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
-      run: psource $ROS_OVERLAY/setup.sh && platform poetry test
+      run: source $ROS_OVERLAY/setup.sh && platform poetry test
 
     - name: ROS Test
       shell: bash
