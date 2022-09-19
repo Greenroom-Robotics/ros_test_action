@@ -8,7 +8,9 @@ inputs:
   token:
     description: "The Github token with access to the packages repo and release api"
     required: true
-
+  platform_module:
+    description: "The platform module eg) platform_perception"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -21,16 +23,15 @@ runs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.cache/pypoetry
-          ~/.local/lib/python3.8/site-packages
-        key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          ~/.cache/pip
+        key: pip-cache
 
     - name: Install poetry
       shell: bash
       run: |
         pip install poetry
         echo "$HOME/.local/bin" >> $GITHUB_PATH
-        poetry config virtualenvs.create false 
+        pip install git+https://github.com/Greenroom-Robotics/platform_cli.git@main
 
     - name: Add apt and and ROS lists
       shell: bash
@@ -55,23 +56,37 @@ runs:
         rosdep update
         rosdep install -y -i --from-paths .
 
-    - name: Poetry Install
+    - name: Platform Build
       shell: bash
-      # if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: python3 ${GITHUB_ACTION_PATH}/scripts/poetry-install.py
+      env:
+        PLATFORM_MODULE: ${{ inputs.platform_module }}
+        ROS_OVERLAY: /opt/ros/galactic
+      run: source $ROS_OVERLAY/setup.sh && platform ros build
+
+    - name: Platform Poetry Install
+      shell: bash
+      env:
+        PLATFORM_MODULE: ${{ inputs.platform_module }}
+        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
+      run: source $ROS_OVERLAY/setup.sh && platform poetry install && platform ros install_poetry_deps
 
     - name: Poetry Test
       shell: bash
-      run: python3 ${GITHUB_ACTION_PATH}/scripts/test-non-ros-poetry-packages.py
+      env:
+        PLATFORM_MODULE: ${{ inputs.platform_module }}
+        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
+      run: source $ROS_OVERLAY/setup.sh && platform poetry test
 
-    - name: Colcon Build
+    - name: ROS Test
       shell: bash
-      run: source $ROS_OVERLAY/setup.sh && colcon build --merge-install
-
-    - name: Colcon Test
-      shell: bash
-      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && colcon test --merge-install || colcon test-result --verbose
+      env:
+        PLATFORM_MODULE: ${{ inputs.platform_module }}
+        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
+      run: source $ROS_OVERLAY/setup.sh && platform ros test
 
     - name: Typecheck
       shell: bash
-      run: source $ROS_OVERLAY/setup.sh && source install/setup.sh && pyright .
+      env:
+        PLATFORM_MODULE: ${{ inputs.platform_module }}
+        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
+      run: source $ROS_OVERLAY/setup.sh && pyright .
