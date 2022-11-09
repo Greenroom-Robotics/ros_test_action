@@ -20,7 +20,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/greenroom-robotics/ros_builder:latest
+      image: ghcr.io/greenroom-robotics/ros_builder:humble-latest
       options: --user root
 
     steps:
