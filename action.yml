@@ -60,7 +60,7 @@ runs:
       shell: bash
       env:
         PLATFORM_MODULE: ${{ inputs.platform_module }}
-        ROS_OVERLAY: /opt/ros/galactic
+        ROS_OVERLAY: /opt/ros/humble
       run: source $ROS_OVERLAY/setup.sh && platform ros build
 
     - name: Platform Poetry Install
