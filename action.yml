@@ -26,20 +26,17 @@ runs:
           ~/.cache/pip
         key: pip-cache
 
-    - name: Install poetry
+    - name: Install platform_cli
       shell: bash
       run: |
-        pip install poetry
         echo "$HOME/.local/bin" >> $GITHUB_PATH
-        pip install git+https://github.com/Greenroom-Robotics/platform_cli.git@main
+        pip install https://github.com/Greenroom-Robotics/platform_cli/archive/refs/heads/feature/pkg-cmds.zip
 
-    - name: Add apt and and ROS lists
+    - name: Setup rosdep and apt lists
       shell: bash
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
-      run: |
-        sudo curl -s https://$API_TOKEN_GITHUB@raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/scripts/setup-rosdep.sh | bash -s
-        sudo curl -s https://$API_TOKEN_GITHUB@raw.githubusercontent.com/Greenroom-Robotics/packages/main/scripts/setup-apt.sh | bash -s
+      run: platform pkg setup
 
     - name: Setup Typecheck deps
       shell: bash
@@ -51,10 +48,7 @@ runs:
       env:
         GHCR_PAT: ${{ inputs.token }}
         ROSDISTRO_OVERLAY_INDEX_URL: https://raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/overlay.yaml
-      run: |
-        sudo apt-get update
-        rosdep update
-        rosdep install -y -i --from-paths .
+      run: platform pkg install-deps
 
     - name: Platform Build
       shell: bash
