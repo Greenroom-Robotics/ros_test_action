@@ -47,7 +47,6 @@ runs:
       shell: bash
       env:
         GHCR_PAT: ${{ inputs.token }}
-        ROSDISTRO_OVERLAY_INDEX_URL: https://raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/overlay.yaml
       run: platform pkg install-deps
 
     - name: Platform Build
