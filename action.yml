@@ -1,5 +1,5 @@
-name: "ROS Test Action"
-description: "Runs Greenroom's standard ros test setup"
+name: "ROS2 Test Action"
+description: "Runs Greenroom's standard ROS2 test setup"
 author: "Greenroom Robotics"
 branding:
   icon: "package"
@@ -15,13 +15,21 @@ runs:
       uses: actions/checkout@v3
 
     - name: Build Docker Container
+      shell: bash
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
-      shell: bash
       run: docker compose build
 
-    - name: Run tests
+    - name: Run Tests
       shell: bash
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
-      run: docker compose run tests
+      run: |
+        mkdir results && chmod a+w results
+        docker compose run tests
+
+    - name: Publish Test Report
+      uses: Greenroom-Robotics/action-junit-report@main
+      if: always() # always run even if the previous step fails
+      with:
+        report_paths: 'results/*/*.xml'
