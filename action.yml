@@ -8,85 +8,18 @@ inputs:
   token:
     description: "The Github token with access to the packages repo and release api"
     required: true
-  platform_module:
-    description: "The platform module eg) platform_perception"
-    required: true
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v2
-      with:
-        node-version: 18
+    - name: Checkout this repository
+      uses: actions/checkout@v3
 
-    - name: Load cached poetry
-      id: cached-poetry-dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cache/pip
-        key: pip-cache
-
-    - name: Install poetry
-      shell: bash
-      run: |
-        pip install poetry
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-        pip install git+https://github.com/Greenroom-Robotics/platform_cli.git@main
-
-    - name: Add apt and and ROS lists
-      shell: bash
+    - name: Build Docker Container
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
-      run: |
-        sudo curl -s https://$API_TOKEN_GITHUB@raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/scripts/setup-rosdep.sh | bash -s
-        sudo curl -s https://$API_TOKEN_GITHUB@raw.githubusercontent.com/Greenroom-Robotics/packages/main/scripts/setup-apt.sh | bash -s
+      run: docker compose build
 
-    - name: Setup Typecheck deps
-      shell: bash
-      run: |
-        npm install --global pyright
-
-    - name: Install rosdep deps
-      shell: bash
+    - name: Run tests
       env:
-        GHCR_PAT: ${{ inputs.token }}
-        ROSDISTRO_OVERLAY_INDEX_URL: https://raw.githubusercontent.com/Greenroom-Robotics/rosdistro/main/overlay.yaml
-      run: |
-        sudo apt-get update
-        rosdep update
-        rosdep install -y -i --from-paths .
-
-    - name: Platform Build
-      shell: bash
-      env:
-        PLATFORM_MODULE: ${{ inputs.platform_module }}
-        ROS_OVERLAY: /opt/ros/humble
-      run: source $ROS_OVERLAY/setup.sh && platform ros build
-
-    - name: Platform Poetry Install
-      shell: bash
-      env:
-        PLATFORM_MODULE: ${{ inputs.platform_module }}
-        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
-      run: source $ROS_OVERLAY/setup.sh && platform poetry install && platform ros install_poetry_deps
-
-    - name: Poetry Test
-      shell: bash
-      env:
-        PLATFORM_MODULE: ${{ inputs.platform_module }}
-        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
-      run: source $ROS_OVERLAY/setup.sh && platform poetry test
-
-    - name: ROS Test
-      shell: bash
-      env:
-        PLATFORM_MODULE: ${{ inputs.platform_module }}
-        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
-      run: source $ROS_OVERLAY/setup.sh && platform ros test
-
-    - name: Typecheck
-      shell: bash
-      env:
-        PLATFORM_MODULE: ${{ inputs.platform_module }}
-        ROS_OVERLAY: /opt/greenroom/${{ inputs.platform_module }}
-      run: source $ROS_OVERLAY/setup.sh && pyright .
+        API_TOKEN_GITHUB: ${{ inputs.token }}
+      run: docker compose run tests

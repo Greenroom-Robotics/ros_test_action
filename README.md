@@ -21,9 +21,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v3
-
       - name: Test
         uses: Greenroom-Robotics/ros_test_action@main
         with:
