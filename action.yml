@@ -17,9 +17,11 @@ runs:
     - name: Build Docker Container
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
+      shell: bash
       run: docker compose build
 
     - name: Run tests
+      shell: bash
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
       run: docker compose run tests
