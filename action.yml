@@ -32,4 +32,5 @@ runs:
       uses: Greenroom-Robotics/action-junit-report@main
       if: always() # always run even if the previous step fails
       with:
+        check_name: 'Test Report'
         report_paths: 'results/*/*.xml'
