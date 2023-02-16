@@ -14,6 +14,9 @@ runs:
     - name: Checkout this repository
       uses: actions/checkout@v3
 
+    - name: Collect Workflow Telemetry
+      uses: Greenroom-Robotics/workflow-telemetry-action@main
+
     - name: Build Docker Container
       shell: bash
       env:
