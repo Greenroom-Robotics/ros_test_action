@@ -23,12 +23,14 @@ runs:
       shell: bash
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
+        GPU: "false"
       run: docker compose build
 
     - name: Run Tests
       shell: bash
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
+        GPU: "false"
       run: |
         mkdir results && chmod a+w results
         docker compose run tests
