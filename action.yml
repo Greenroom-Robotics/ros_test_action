@@ -8,6 +8,10 @@ inputs:
   token:
     description: "The Github token with access to the packages repo and release api"
     required: true
+  ros_distro:
+    description: "The ROS2 distro to use"
+    required: false
+
 runs:
   using: "composite"
   steps:
@@ -24,6 +28,7 @@ runs:
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
         GPU: "false"
+        ROS_DISTRO: ${{ inputs.ros_distro }}
       run: docker compose build
 
     - name: Run Tests
@@ -31,6 +36,7 @@ runs:
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
         GPU: "false"
+        ROS_DISTRO: ${{ inputs.ros_distro }}
       run: |
         mkdir results && chmod a+w results
         docker compose run tests
